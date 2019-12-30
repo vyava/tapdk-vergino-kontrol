@@ -1,6 +1,6 @@
 const rq = require("request-promise");
 const cheerio = require("cheerio");
-const TOKENS = require("./tokens");
+// const TOKENS = require("./tokens");
 
 const DEFAULT_URL = "http://212.174.130.210/NewTapdk/ViewApp/sorgu.aspx";
 
@@ -69,12 +69,13 @@ class Request {
                 ...this.options,
                 transform: function(body){
                     let $ = cheerio.load(body);
-                    return $("#GridView1").find("tbody").find("tr").find("span").html();
+                    let ruhsatContainer = $("#GridView1").find("tbody").find("tr").find("span");
+                    if(ruhsatContainer.length > 0) return ruhsatContainer.html();
                 },
             });
         } catch (error) {
             // return this.handleError(error);
-            return null
+            return false;
         }
     }
 

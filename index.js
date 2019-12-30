@@ -45,35 +45,42 @@ let parser = new Parser();
 
 
 result.map(async (bayi, i) => {
-    if (i < 5) {
+    if (i < 1) {
         let { vergiNo, ruhsatNo } = bayi;
 
-        for(let lastNumber = 0;i<10;i++){
-            let testVergiNo = vergiNo + lastNumber.toString();
 
-            let _ruhsatNo = await parser.request(testVergiNo.trim());
-            if (_ruhsatNo) {
-                if (_ruhsatNo == ruhsatNo) {
-                    result[i] = { ...bayi, tip: "Şahıs" }
-                    console.log("Doğru")
-                } else {
-                    result[i]['tip'] = "HATALI RUHSAT NO"
-                    console.log("Yanlış")
-                }
-            } else {
-                result[i]['tip'] = "Tüzel"
-                console.log("Sonuç bulunamadı")
+        // let req = iterator(vergiNo);
+
+        let i = 9;
+        let data = await new Promise((resolve, reject) => {
+            while (i != 0) {
+                let testVergiNo = `${vergiNo}${i}`;
+                parser.request(testVergiNo)
+                    .then(res => {
+                        if(res){
+                            resolve({
+                                vergiNo : testVergiNo,
+                                ruhsatNo : res
+                            });
+                        }
+                    })
+                i--;
             }
+        });
+
+        console.log(data)
+
+        if (data) {
+            if (data.ruhsatNo == ruhsatNo) {
+                result[i] = { ...bayi, tip: "Şahıs", vergiNo : data.vergiNo}
+            } else {
+                result[i]['tip'] = "HATALI RUHSAT NO"
+            };
+            console.log("break..");
+        } else {
+            result[i]['tip'] = "Tüzel";
+            console.log("Bulunamadı");
         }
-    }
-    
+    };
     writeFile(result);
-})
-
-
-
-
-// (async function(){
-//     let res = await parser.request("2571469552");
-//     console.log(res)
-// })()
+});
