@@ -43,44 +43,54 @@ const result = readFile();
 
 let parser = new Parser();
 
+const getData = (vergiNo) => {
+    return new Promise((resolve) => {
+        parser.request(vergiNo)
+            .then(data => {
+                resolve(data);
+            })
+    })
+}
 
 result.map(async (bayi, i) => {
-    if (i < 1) {
-        let { vergiNo, ruhsatNo } = bayi;
+    let { vergiNo, ruhsatNo } = bayi;
 
+    let j = 9;
+    let _ruhsatNo = null;
+    let testVergiNo;
 
-        // let req = iterator(vergiNo);
+    while (j!==0) {
+        testVergiNo = `${vergiNo}${j}`;
+        _ruhsatNo = await getData(testVergiNo);
+        console.log(testVergiNo, (_ruhsatNo || "BULUNAMADI"));
+        if (_ruhsatNo) break;
+        --j;
+    }
 
-        let i = 9;
-        let data = await new Promise((resolve, reject) => {
-            while (i != 0) {
-                let testVergiNo = `${vergiNo}${i}`;
-                parser.request(testVergiNo)
-                    .then(res => {
-                        if(res){
-                            resolve({
-                                vergiNo : testVergiNo,
-                                ruhsatNo : res
-                            });
-                        }
-                    })
-                i--;
+    if (_ruhsatNo) {
+        if (_ruhsatNo == ruhsatNo) {
+            result[i] = {
+                ...bayi,
+                tip: "Şahıs",
+                yeniVergiNo: testVergiNo
             }
-        });
-
-        console.log(data)
-
-        if (data) {
-            if (data.ruhsatNo == ruhsatNo) {
-                result[i] = { ...bayi, tip: "Şahıs", vergiNo : data.vergiNo}
-            } else {
-                result[i]['tip'] = "HATALI RUHSAT NO"
-            };
-            console.log("break..");
         } else {
-            result[i]['tip'] = "Tüzel";
-            console.log("Bulunamadı");
+            result[i] = {
+                ...bayi,
+                tip: "HATALI RUHSAT NO",
+                yeniVergiNo: testVergiNo,
+                dogruRuhsatNo: _ruhsatNo
+            }
+        };
+        console.log("break..");
+    } else {
+        result[i] = {
+            ...bayi,
+            tip: "BULUNAMADI",
+            yeniVergiNo: ""
         }
-    };
+    }
+
     writeFile(result);
 });
+
